@@ -44,7 +44,6 @@ int destructPolygon(Polygon *pol)
 
 
 // Compute square of the triangle
-
 double triangleSquare(Point first, Point second, Point third)
 {
     double square = fabs(
@@ -55,7 +54,6 @@ double triangleSquare(Point first, Point second, Point third)
 
 // Check if 3 points can create a triangle
 // |x + y| < |x| + |y|
-
 int isTriangle(Point first, Point second, Point third)
 {
     double firstSide = 0, secondSide = 0, thirdSide = 0;
@@ -80,7 +78,6 @@ int main(int argc, char *argv[])
         Polygon pol = {};
 
         // Create polygon with 4 points (triangle + selected point)
-
         constructPolygon(&pol, 4);
         Point *points = pol.points;
 
@@ -134,18 +131,15 @@ int main(int argc, char *argv[])
         }
 
         // realSqr - square of the triangle
-
         double realSqr = triangleSquare(points[0], points[1], points[2]);
         double firstSqr = 0, secondSqr = 0, thirdSqr = 0;
 
         // Compute squares of entire triangles
-
         firstSqr = triangleSquare(points[0], points[1], points[3]);
         secondSqr = triangleSquare(points[0], points[2], points[3]);
         thirdSqr = triangleSquare(points[1], points[2], points[3]);
 
         // if sum of 3 triangles != real square => print(No)
-
         if (firstSqr + secondSqr + thirdSqr != realSqr
             || (firstSqr * secondSqr * thirdSqr == 0))
             printf("No\n");
