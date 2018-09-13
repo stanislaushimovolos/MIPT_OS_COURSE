@@ -1,14 +1,12 @@
 #include <stdlib.h>
 #include <math.h>
-#include <unistd.h>
 #include <limits.h>
 #include <errno.h>
-
 #include <assert.h>
+
 #include "stdio.h"
 
 #define ARG_NUMBER 8
-
 
 typedef struct
 {
@@ -82,8 +80,8 @@ int main(int argc, char *argv[])
         Polygon pol = {};
 
         // Create polygon with 4 points (triangle + selected point)
-        constructPolygon(&pol, 4);
 
+        constructPolygon(&pol, 4);
         Point *points = pol.points;
 
         double valueKeeper = 0;
@@ -136,15 +134,18 @@ int main(int argc, char *argv[])
         }
 
         // realSqr - square of the triangle
+
         double realSqr = triangleSquare(points[0], points[1], points[2]);
         double firstSqr = 0, secondSqr = 0, thirdSqr = 0;
 
         // Compute squares of entire triangles
+
         firstSqr = triangleSquare(points[0], points[1], points[3]);
         secondSqr = triangleSquare(points[0], points[2], points[3]);
         thirdSqr = triangleSquare(points[1], points[2], points[3]);
 
         // if sum of 3 triangles != real square => print(No)
+
         if (firstSqr + secondSqr + thirdSqr != realSqr
             || (firstSqr * secondSqr * thirdSqr == 0))
             printf("No\n");
