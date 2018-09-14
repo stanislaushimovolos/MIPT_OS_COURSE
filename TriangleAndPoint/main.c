@@ -43,7 +43,7 @@ int destructPolygon(Polygon *pol)
 }
 
 
-// Compute square of the triangle
+// Compute square of triangle
 double triangleSquare(Point first, Point second, Point third)
 {
     double square = fabs(
