@@ -93,7 +93,6 @@ int readMatrix(Matrix *mat, int argc, char *argv[])
     {
         size_t columnSz = 0;
         size_t rowSz = 0;
-
         char *endPtr;
 
         errno = 0;
