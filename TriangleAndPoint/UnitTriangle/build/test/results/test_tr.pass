@@ -1,0 +1,34 @@
+---
+:source:
+  :path: test
+  :file: test_tr.c
+:successes:
+- :test: test_in
+  :line: 52
+  :message: ''
+- :test: test_out
+  :line: 59
+  :message: ''
+- :test: test_border
+  :line: 66
+  :message: ''
+- :test: test_triangleTop
+  :line: 72
+  :message: ''
+:failures: []
+:ignores: []
+:counts:
+  :total: 4
+  :passed: 4
+  :failed: 0
+  :ignored: 0
+:stdout:
+- setUp
+- tearDown
+- setUp
+- tearDown
+- setUp
+- tearDown
+- setUp
+- tearDown
+:time: 0.0008620339995104587
