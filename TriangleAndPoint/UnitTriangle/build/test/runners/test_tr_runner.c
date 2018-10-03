@@ -76,7 +76,7 @@ int main(void)
   RUN_TEST(test_in, 52);
   RUN_TEST(test_out, 59);
   RUN_TEST(test_border, 66);
-  RUN_TEST(test_triangleTop, 72);
+  RUN_TEST(test_triangleTop, 73);
 
   return suite_teardown(UnityEnd());
 }

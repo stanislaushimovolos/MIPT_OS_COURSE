@@ -155,6 +155,8 @@ void test_border(void)
 
 
 
+
+
 void test_triangleTop(void)
 
 {
@@ -165,6 +167,6 @@ void test_triangleTop(void)
 
    ((void *)0)
 
-   ), (UNITY_UINT)(75), UNITY_DISPLAY_STYLE_INT);
+   ), (UNITY_UINT)(76), UNITY_DISPLAY_STYLE_INT);
 
 }
