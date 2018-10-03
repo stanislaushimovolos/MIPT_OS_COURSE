@@ -29,30 +29,35 @@ char **findUrl(char *data)
     assert(urls);
 
     errorCounter = 0;
-    curPtr = data;
-    while ((curPtr = strstr(curPtr, errorFlag)) != NULL)
+    curPtr = strstr(data, errorFlag);
+    while (curPtr)
     {
         // Skip first argument
         urls[errorCounter + 1] = curPtr;
-        curPtr++;
         errorCounter++;
+
+        curPtr = strchr(curPtr, '\n');
+        if (curPtr)
+            *curPtr = 0;
+        else
+            break;
+
+        curPtr++;
+        if (curPtr)
+            curPtr = strstr(curPtr, errorFlag);
     }
 
     for (int i = 0; i < errorCounter; i++)
     {
         // Skip first argument
         curPtr = strstr(urls[i + 1], firstUrlPrefix);
+        if (!curPtr)
+            curPtr = strstr(urls[i + 1], secondUrlPrefix);
+
+
         urls[i + 1] = curPtr;
 
-        if (!curPtr)
-        {
-            curPtr = strstr(curPtr, secondUrlPrefix);
-            curPtr += sizeof(secondUrlPrefix);
-            urls[i + 1] = curPtr;
-        }
-        else
-            curPtr += sizeof(firstUrlPrefix);
-
+        curPtr += sizeof(secondUrlPrefix);
         curPtr = strchr(curPtr, '/');
         *(curPtr + 1) = 0;
     }
