@@ -53,6 +53,10 @@ void test_in(void)
 {
     int res = isInside(0, 0, 100, 0, 0, 100, 100, 100);
     TEST_ASSERT_EQUAL(FALSE, res);
+
+    //TEST_ASSERT_TRUE
+    //TEST_ASSERT_FALSE
+    //TEST_ASSERT_EQUAL_STRING
 }
 
 

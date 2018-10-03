@@ -115,6 +115,14 @@ void test_in(void)
 
    ), (UNITY_UINT)(55), UNITY_DISPLAY_STYLE_INT);
 
+
+
+
+
+
+
+
+
 }
 
 
@@ -131,7 +139,7 @@ void test_out(void)
 
    ((void *)0)
 
-   ), (UNITY_UINT)(62), UNITY_DISPLAY_STYLE_INT);
+   ), (UNITY_UINT)(66), UNITY_DISPLAY_STYLE_INT);
 
 }
 
@@ -149,7 +157,7 @@ void test_border(void)
 
    ((void *)0)
 
-   ), (UNITY_UINT)(69), UNITY_DISPLAY_STYLE_INT);
+   ), (UNITY_UINT)(73), UNITY_DISPLAY_STYLE_INT);
 
 }
 
@@ -167,6 +175,6 @@ void test_triangleTop(void)
 
    ((void *)0)
 
-   ), (UNITY_UINT)(76), UNITY_DISPLAY_STYLE_INT);
+   ), (UNITY_UINT)(80), UNITY_DISPLAY_STYLE_INT);
 
 }

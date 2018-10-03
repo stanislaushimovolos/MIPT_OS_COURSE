@@ -74,9 +74,9 @@ int main(void)
   suite_setup();
   UnityBegin("test_tr.c");
   RUN_TEST(test_in, 52);
-  RUN_TEST(test_out, 59);
-  RUN_TEST(test_border, 66);
-  RUN_TEST(test_triangleTop, 73);
+  RUN_TEST(test_out, 63);
+  RUN_TEST(test_border, 70);
+  RUN_TEST(test_triangleTop, 77);
 
   return suite_teardown(UnityEnd());
 }

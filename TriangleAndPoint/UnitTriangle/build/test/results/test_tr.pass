@@ -7,13 +7,13 @@
   :line: 52
   :message: ''
 - :test: test_out
-  :line: 59
+  :line: 63
   :message: ''
 - :test: test_border
-  :line: 66
+  :line: 70
   :message: ''
 - :test: test_triangleTop
-  :line: 73
+  :line: 77
   :message: ''
 :failures: []
 :ignores: []
@@ -31,4 +31,4 @@
 - tearDown
 - setUp
 - tearDown
-:time: 0.001121096000133548
+:time: 0.0010449960000187275
