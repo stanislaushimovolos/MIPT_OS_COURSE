@@ -5,55 +5,57 @@
 #include <errno.h>
 #include <string.h>
 
-const char urlPrefix1[] = "http://";
-const char urlPrefix2[] = "https://";
+const char firstUrlPrefix[] = "http://";
+const char secondUrlPrefix[] = "https://";
 const char errorFlag[] = "ERROR";
 
 
 char **findUrl(char *data)
 {
-    size_t errCounter = 0;
+    assert(data);
 
-    char *ptr = data;
-    while ((ptr = strstr(ptr, errorFlag)) != NULL)
+    size_t errorCounter = 0;
+    char *curPtr = data;
+
+    // Count number of errors
+    while ((curPtr = strstr(curPtr, errorFlag)) != NULL)
     {
-        ptr++;
-        errCounter++;
+        curPtr++;
+        errorCounter++;
     }
 
-    char **urls = (char **) calloc(errCounter + 2, sizeof(char *));
+    // Allocate memory for urls
+    char **urls = (char **) calloc(errorCounter + 2, sizeof(char *));
+    assert(urls);
 
-    int i = 0;
-    ptr = data;
-    while ((ptr = strstr(ptr, errorFlag)) != NULL)
+    errorCounter = 0;
+    curPtr = data;
+    while ((curPtr = strstr(curPtr, errorFlag)) != NULL)
     {
-        urls[i + 1] = ptr;
-        ptr++;
-        i++;
+        // Skip first argument
+        urls[errorCounter + 1] = curPtr;
+        curPtr++;
+        errorCounter++;
     }
 
-
-    for (int i = 0; i < errCounter; i++)
+    for (int i = 0; i < errorCounter; i++)
     {
-        ptr = strstr(urls[i + 1], urlPrefix1);
-        urls[i + 1] = ptr;
+        // Skip first argument
+        curPtr = strstr(urls[i + 1], firstUrlPrefix);
+        urls[i + 1] = curPtr;
 
-        if (!ptr)
+        if (!curPtr)
         {
-            ptr = strstr(ptr, urlPrefix2);
-            ptr += sizeof(urlPrefix2);
-            urls[i + 1] = ptr;
+            curPtr = strstr(curPtr, secondUrlPrefix);
+            curPtr += sizeof(secondUrlPrefix);
+            urls[i + 1] = curPtr;
         }
         else
-            ptr += sizeof(urlPrefix1);
+            curPtr += sizeof(firstUrlPrefix);
 
-        ptr = strchr(ptr, '/');
-        *(ptr + 1) = 0;
-        ptr += 2;
+        curPtr = strchr(curPtr, '/');
+        *(curPtr + 1) = 0;
     }
-
-    urls[errCounter] = NULL;
-
     return urls;
 }
 
@@ -93,9 +95,12 @@ int main(int argc, char **argv, char **env)
 
     char *data = getBuf(file, NULL);
     char **res = findUrl(data);
+
+    // Assign first arg to name of this process
     res[0] = argv[0];
 
-    int i = 0;
-    execvp("wget",  res);
-    return -1;
+    // Call wget
+    execvp("wget", res);
+
+    return EXIT_FAILURE;
 }
