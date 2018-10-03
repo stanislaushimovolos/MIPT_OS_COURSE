@@ -4,4 +4,4 @@
     
 - Introduction to system programming     
     2.1 [Environmental variables](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/environmentVars)<br />
-    1.2 [My wc](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/myvc)
+    2.2 [My wc](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/myvc)
