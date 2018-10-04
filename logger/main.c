@@ -27,7 +27,7 @@ int main(int argc, char **argv, char **env)
         exit(EXIT_FAILURE);
     }
 
-    // Compute size if buffer
+    // Compute size of buffer
     size_t instructionSize =
             strlen(argv[1]) + sizeof(catInstruction) +
             sizeof(grepInstruction) + sizeof(getInstruction) + 2 * sizeof(defaultOutput);
