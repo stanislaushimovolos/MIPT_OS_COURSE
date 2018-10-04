@@ -1,86 +1,13 @@
 #include <stdio.h>
-#include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 
-const char firstUrlPrefix[] = "http://";
-const char secondUrlPrefix[] = "https://";
-const char errorFlag[] = "ERROR";
-
-
-char **findUrl(char *data)
-{
-    assert(data);
-
-    size_t errorCounter = 0;
-    char *curPtr = data;
-
-    // Count number of errors
-    while ((curPtr = strstr(curPtr, errorFlag)) != NULL)
-    {
-        curPtr++;
-        errorCounter++;
-    }
-
-    // Allocate memory for urls
-    char **urls = (char **) calloc(errorCounter + 2, sizeof(char *));
-    assert(urls);
-
-    errorCounter = 0;
-    curPtr = strstr(data, errorFlag);
-    while (curPtr)
-    {
-        // Skip first argument
-        urls[errorCounter + 1] = curPtr;
-        errorCounter++;
-
-        curPtr = strchr(curPtr, '\n');
-        if (curPtr)
-            *curPtr = 0;
-        else
-            break;
-
-        curPtr++;
-        if (curPtr)
-            curPtr = strstr(curPtr, errorFlag);
-    }
-
-    for (int i = 0; i < errorCounter; i++)
-    {
-        // Skip first argument
-        curPtr = strstr(urls[i + 1], firstUrlPrefix);
-        if (!curPtr)
-            curPtr = strstr(urls[i + 1], secondUrlPrefix);
-
-
-        urls[i + 1] = curPtr;
-
-        curPtr += sizeof(secondUrlPrefix);
-        curPtr = strchr(curPtr, '/');
-        *(curPtr + 1) = 0;
-    }
-    return urls;
-}
-
-
-char *getBuf(FILE *file, size_t *buf_sz)
-{
-    assert(file);
-    fseek(file, 0, SEEK_END);
-    size_t l_buf_sz = (size_t) ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char *data = (char *) calloc(l_buf_sz + 1, sizeof(char));
-    fread(data, 1, l_buf_sz, file);
-
-    if (buf_sz)
-        *buf_sz = l_buf_sz;
-
-    return data;
-}
-
+static const char grepInstruction[] = " | grep -a ERROR | grep  -Eao \"https?://\\S+?\\/|http?://\\S+?\\/\"  > ";
+static const char getInstruction[] = " && wget -i ";
+static const char catInstruction[] = "cat ";
+static const char defaultOutput[] = "error_urls.log";
 
 int main(int argc, char **argv, char **env)
 {
@@ -90,22 +17,38 @@ int main(int argc, char **argv, char **env)
         exit(EXIT_FAILURE);
     }
 
-    errno = 0;
-    FILE *file = fopen(argv[1], "r");
+    char *inputFile = argv[1];
+
+    // Check if file exists
+    FILE *file = fopen(inputFile, "rt");
     if (!file)
     {
-        printf("couldn't open file %s\n", argv[1]);
+        printf("can't open %s\n", inputFile);
         exit(EXIT_FAILURE);
     }
 
-    char *data = getBuf(file, NULL);
-    char **res = findUrl(data);
+    // Compute size if buffer
+    size_t instructionSize =
+            strlen(argv[1]) + sizeof(catInstruction) +
+            sizeof(grepInstruction) + sizeof(getInstruction) + 2 * sizeof(defaultOutput);
 
-    // Assign first arg to name of this process
-    res[0] = argv[0];
+    char *buffer = (char *) calloc(instructionSize + 1, sizeof(char));
 
-    // Call wget
-    execvp("wget", res);
+    /* ............................
+     * ............................
+     * ............................
+     * */
 
-    return EXIT_FAILURE;
+    strcat(buffer, catInstruction);
+    strcat(buffer, inputFile);
+    strcat(buffer, grepInstruction);
+    strcat(buffer, defaultOutput);
+    strcat(buffer, getInstruction);
+    strcat(buffer, defaultOutput);
+
+    int result = 0;
+    result = system(buffer);
+
+    free(buffer);
+    return result;
 }
