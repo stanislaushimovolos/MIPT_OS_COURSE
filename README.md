@@ -10,4 +10,4 @@
     2.4.3 [Less useless supervisor](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/supervisor/secondTask.cpp) <br />
     
 - More threads!!!<br />
-    3.1 [Humanoid robot](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/robot_two_legs.c)
+    3.1 [Humanoid robot (Peterson's algorithm)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/robot_two_legs.c)
