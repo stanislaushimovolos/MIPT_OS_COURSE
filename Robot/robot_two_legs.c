@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
     if (status != 0)
         exit(EXIT_FAILURE);
 
-
     pthread_join(right_leg, (void **) NULL);
     pthread_join(left_leg, (void **) NULL);
     return 0;
