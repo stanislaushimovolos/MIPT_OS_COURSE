@@ -1,2 +1,0 @@
-ERROR https://www.hostinger.ru/rukovodstva/kak-ispolzovat-komandu-wget/
-http://mipt.ru/
