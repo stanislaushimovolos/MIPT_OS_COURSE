@@ -13,5 +13,4 @@
     3.1 [Humanoid robot (Peterson's algorithm)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/robot_two_legs.c)
     
 - Networks<br />
-    4.1 [Chatroom]
-   (https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/chatRoom)
+    4.1 [Chatroom](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/chatRoom)
