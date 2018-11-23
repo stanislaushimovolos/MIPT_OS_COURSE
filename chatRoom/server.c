@@ -1,37 +1,12 @@
 #include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <pthread.h>
-#include <assert.h>
+#include "netUtils.h"
 
-#define ACCEPT_QUEUE_SIZE  5
 #define PORT 13666
 
 #define MAX_MSG_LEN 1024
 #define MAX_CLIENTS  100
 #define MAX_NAME_LEN 32
-
-void fillAddress(struct sockaddr_in *addr, uint16_t port);
-
-void doBind(int sd, struct sockaddr_in addr);
-
-void send_message_other(const char *s, int fd);
-
-void *handleClient(void *arg);
-
-void doListen(int sd);
-
-int openServerSocket(uint16_t port);
-
-int doAccept(int sd);
-
-int serverSocket();
-
-static const char apologise[] = "Sorry, there are too many clients\n";
-static const char enter_name[] = "Please, introduce yourself\n";
 
 typedef struct
 {
@@ -40,24 +15,33 @@ typedef struct
     char name[MAX_NAME_LEN];
 } client_t;
 
+void send_message_other(const char *s, int fd);
+
+void *handle_client(void *arg);
+
+
+static const char apologise[] = "Sorry, there are too many clients\n";
+static const char enter_name[] = "Please, introduce yourself\n";
+
 client_t *clients[MAX_CLIENTS];
 unsigned int client_counter = 0;
 
 
 int main()
 {
-    int sd = openServerSocket(PORT);
+    display_address();
+    int sd = open_server_sock(PORT);
 
     while (1)
     {
         // descriptor of new client
-        int cliSd = doAccept(sd);
+        int cliSd = do_accept(sd);
 
         if ((client_counter + 1) == MAX_CLIENTS)
         {
             write(cliSd, apologise, sizeof(apologise));
             close(cliSd);
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
 
         client_t *client = (client_t *) calloc(1, sizeof(client_t));
@@ -65,7 +49,12 @@ int main()
 
         // create thread for new client
         pthread_t cli_pid;
-        pthread_create(&cli_pid, NULL, &handleClient, (void *) client);
+        if (pthread_create(&cli_pid, NULL, &handle_client, (void *) client) != 0)
+        {
+            perror("pthread_create() fail");
+            exit(EXIT_FAILURE);
+        }
+        pthread_detach(cli_pid);
     }
 }
 
@@ -126,7 +115,7 @@ void send_message_other(const char *s, int fd)
 }
 
 
-void *handleClient(void *arg)
+void *handle_client(void *arg)
 {
     assert(arg);
 
@@ -150,7 +139,7 @@ void *handleClient(void *arg)
     add_client(cli);
     printf("add client %d\n", cli->connect_fd);
 
-    // some kluges for decoration:)
+    // some kludges for decoration:)
     buff_in[cli->name_len - 1] = ' ';
     buff_in[cli->name_len - 2] = ':';
 
@@ -158,76 +147,8 @@ void *handleClient(void *arg)
     {
         printf("client %d send message\n", cli->connect_fd);
         send_message_other(buff_in, cli->connect_fd);
-
     }
 
     printf("delete client %d\n", cli->connect_fd);
     delete_client(cli->connect_fd);
-}
-
-
-int doAccept(int sd)
-{
-    struct sockaddr *clientAddress = NULL;
-    int cliSd = accept(sd, clientAddress, NULL);
-    if (cliSd == -1)
-    {
-        perror("accept() fail");
-        exit(EXIT_FAILURE);
-    }
-    return cliSd;
-}
-
-
-int openServerSocket(uint16_t port)
-{
-    struct sockaddr_in address;
-    fillAddress(&address, port);
-
-    int sd = serverSocket();
-    doBind(sd, address);
-    doListen(sd);
-    return sd;
-}
-
-
-void doListen(int sd)
-{
-    if (listen(sd, ACCEPT_QUEUE_SIZE))
-    {
-        perror("listen() fail");
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-int serverSocket()
-{
-    int sd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sd < 0)
-    {
-        perror("socket() fail");
-        exit(EXIT_FAILURE);
-    }
-    return sd;
-}
-
-
-void doBind(int sd, struct sockaddr_in addr)
-{
-    if (bind(sd, (const struct sockaddr *) &addr, sizeof(addr)))
-    {
-        perror("bind() fail");
-        close(sd);
-        exit(EXIT_FAILURE);
-    }
-}
-
-
-void fillAddress(struct sockaddr_in *addr, uint16_t port)
-{
-    bzero(addr, sizeof(*addr));
-    (*addr).sin_family = AF_INET;
-    (*addr).sin_addr.s_addr = INADDR_ANY;
-    (*addr).sin_port = htons(port);
 }
