@@ -7,15 +7,17 @@
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-size_t _cur_leg = 0;
-size_t _cur_step = 0;
-size_t _total_legs_num = 0;
+int _cur_leg = 0;
+int _cur_step = 0;
+int _total_legs_num = 0;
 
 
-void *make_step(void *args)
+void *take_step(void *args)
 {
-    size_t this_leg_num = *(size_t *) args;
-    size_t total_leg_num = _total_legs_num;
+    assert(args);
+
+    int this_leg_num = *(int *) args;
+    int total_leg_num = _total_legs_num;
 
     while (1)
     {
@@ -30,7 +32,7 @@ void *make_step(void *args)
             _cur_leg++;
             _cur_step++;
 
-            printf("Step %lu, leg %lu\n", _cur_step, this_leg_num + 1);
+            printf("Step %d, leg %d\n", _cur_step, this_leg_num + 1);
             _cur_leg = _cur_leg % total_leg_num;
         }
 
@@ -41,22 +43,47 @@ void *make_step(void *args)
 
 int main(int argc, char *argv[])
 {
-
-    size_t steps_num = (size_t) readNumber(argc, argv);
+    int legs_num = readNumber(argc, argv);
+    if (legs_num <= 0)
+    {
+        printf("Expected non-negative value, got %d", legs_num);
+        exit(EXIT_FAILURE);
+    }
 
     // Uses global variable to do not send same information to each thread
-    _total_legs_num = steps_num;
+    _total_legs_num = legs_num;
 
-    pthread_t *legs = (pthread_t *) calloc(steps_num, sizeof(pthread_t));
-    size_t *legs_id = (size_t *) calloc(steps_num, sizeof(size_t));
+    pthread_t *legs = (pthread_t *) calloc(legs_num, sizeof(pthread_t));
+    if (!legs)
+    {
+        perror("calloc() fail");
+        exit(EXIT_FAILURE);
+    }
 
-    for (int i = 0; i < steps_num; i++)
+    int *legs_id = (int *) calloc(legs_num, sizeof(size_t));
+    if (!legs_id)
+    {
+        perror("calloc() fail");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < legs_num; i++)
     {
         legs_id[i] = i;
-        pthread_create(&legs[i], NULL, make_step, &legs_id[i]);
+        if (pthread_create(&legs[i], NULL, take_step, &legs_id[i]) != 0)
+        {
+            fprintf(stderr, "pthread_create() fail\n");
+            exit(EXIT_FAILURE);
+        }
     }
-    for (int i = 0; i < steps_num; i++)
-        pthread_join(legs[i], (void **) NULL);
+    for (int i = 0; i < legs_num; i++)
+    {
+        if (pthread_join(legs[i], (void **) NULL) != 0)
+        {
+            fprintf(stderr, "pthread_join() fail\n");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     free(legs);
     free(legs_id);
