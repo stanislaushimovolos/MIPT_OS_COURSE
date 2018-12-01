@@ -12,7 +12,7 @@
 - More threads!!!<br />
     3.1 [Humanoid robot (Peterson's algorithm)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/robot_two_legs.c)<br />
     3.2 [Robot with N legs](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/multiRobot.c)<br />
-    3.3 [Dining philosophers](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/diningPhilosophers/philosophers.c)
+    3.3A [Dining philosophers(thread version)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/diningPhilosophers/philosophers.c)
     
 - Networks<br />
     4.1 [Chatroom](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/chatRoom)<br />

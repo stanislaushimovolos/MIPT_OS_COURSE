@@ -5,9 +5,9 @@
 #include <assert.h>
 #include <semaphore.h>
 
-#define phil_num 5
-#define max_dur_of_thought 3
-#define max_dur_of_eating 4
+#define phil_n 5
+#define max_dur_eating 4
+#define max_dur_thought 3
 
 void *philosopher(void *args);
 
@@ -19,19 +19,21 @@ void think(int id);
 
 void eat(int id);
 
-pthread_mutex_t forks[phil_num];
-
+pthread_mutex_t forks[phil_n];
 sem_t waiter;
 
 
 int main()
 {
-    pthread_t phil[phil_num];
-    int args[phil_num];
+    int args[phil_n] = {};
+    pthread_t phil[phil_n] = {};
 
-    sem_init(&waiter, 0, phil_num - 1);
-
-    for (int i = 0; i < phil_num; i++)
+    if (sem_init(&waiter, 0, phil_n - 1) < 0)
+    {
+        perror("sem_init() fail");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < phil_n; i++)
     {
         args[i] = i;
         if (pthread_create(&phil[i], NULL, philosopher, &args[i]) != 0)
@@ -42,7 +44,7 @@ int main()
     }
 
     // Never happens
-    for (int i = 0; i < phil_num; i++)
+    for (int i = 0; i < phil_n; i++)
         pthread_join(phil[i], (void **) NULL);
     return 0;
 }
@@ -66,29 +68,38 @@ void *philosopher(void *args)
 
 void take_forks(int id)
 {
-    sem_wait(&waiter);
+    if (sem_wait(&waiter) < 0)
+    {
+        perror("sem_wait() fail");
+        exit(EXIT_FAILURE);
+    }
     pthread_mutex_lock(&forks[id]);
-    pthread_mutex_lock(&forks[(id + 1) % phil_num]);
+    pthread_mutex_lock(&forks[(id + 1) % phil_n]);
 }
 
 
 void put_forks(int id)
 {
+    pthread_mutex_unlock(&forks[(id + 1) % phil_n]);
     pthread_mutex_unlock(&forks[id]);
-    pthread_mutex_unlock(&forks[(id + 1) % phil_num]);
-    sem_post(&waiter);
+
+    if (sem_post(&waiter) < 0)
+    {
+        perror("sem_post() fail");
+        exit(EXIT_FAILURE);
+    }
 }
 
 
 void think(int id)
 {
     printf("Philosopher № %d is thinking\n", id);
-    sleep(rand() % (max_dur_of_thought) + 1);
+    sleep(rand() % (max_dur_thought + 1));
 }
 
 
 void eat(int id)
 {
     printf("Philosopher № %d is eating\n", id);
-    sleep(rand() % (max_dur_of_eating) + 1);
+    sleep(rand() % (max_dur_eating + 1));
 }
