@@ -14,10 +14,8 @@ void lock(int thread_id);
 
 void *thread(void *arg);
 
-
 int number[thread_num] = {0};
 int choosing[thread_num] = {0};
-
 int resource = 0;
 
 
@@ -25,7 +23,7 @@ int main(int argc, char **argv)
 {
     pthread_t threads[thread_num];
     for (int i = 0; i < thread_num; ++i)
-        if (pthread_create(&threads[i], NULL, &thread, (void *) ((long) i)) < 0)
+        if (pthread_create(&threads[i], NULL, &thread, (void *) (size_t)i) < 0)
         {
             fprintf(stderr, "pthread_create() fail\n");
             exit(EXIT_FAILURE);
@@ -75,20 +73,20 @@ void critical_section(int thread_id)
 {
     if (resource != 0)
     {
-        printf("Something is wrong with algorithm, thread № %d, resource = %d",
+        printf("Something is wrong with the algorithm, thread № %d, resource = %d",
                thread_id, resource);
         exit(EXIT_FAILURE);
     }
 
     resource = thread_id;
-    printf("%d is in critical section\n", resource);
+    printf("%d is in the critical section\n", resource);
     resource = 0;
 }
 
 
 void *thread(void *arg)
 {
-    long thread = (long) arg;
+    size_t thread = (size_t) arg;
     while (1)
     {
         lock(thread);
