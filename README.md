@@ -9,7 +9,7 @@
     2.4.1-2.4.2 [Useless supervisor](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/supervisor/first_task.c)<br />
     2.4.3 [Less useless supervisor](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/supervisor/secondTask.cpp) <br />
     
-- More threads!!!<br />
+- Inter Process Communication<br />
     3.1 [Humanoid robot (Peterson's algorithm)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/robot_two_legs.c)<br />
     3.2 [Robot with N legs](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/Robot/multiRobot.c)<br />
     3.3A [Dining philosophers(POSIX semaphores)](https://github.com/stanislaushimovolos/MIPT_programming_tasks/blob/master/diningPhilosophers/philosophers.c)<br />
