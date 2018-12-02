@@ -7,15 +7,14 @@
 #include <assert.h>
 #include <sys/wait.h>
 
+#define size_of_dish 16
+#define max_thought 3
+#define max_eating 4
 #define phil_n 5
-#define max_dur_eating 4
-#define max_dur_thought 3
-
-void *philosopher(void *args);
 
 void take_forks(int phil_pos, int forks_id, int waiter_id);
 
-void put_forks(int phil_name, int forks_id, int waiter_id);
+void put_forks(int phil_pos, int forks_id, int waiter_id);
 
 void think(int id);
 
@@ -24,15 +23,15 @@ void eat(int id);
 
 int main()
 {
-    int waiter_id, forks_id;
+    int waiter_id = 0;
+    int forks_id = 0;
 
-    struct sembuf waiter;
+    struct sembuf waiter = {};
     if ((waiter_id = semget(IPC_PRIVATE, 1, 666 | IPC_CREAT)) < 0)
     {
         printf("Can\'t get semid\n");
         exit(EXIT_FAILURE);
     }
-
 
     waiter.sem_op = phil_n - 1;
     waiter.sem_flg = 0;
@@ -64,58 +63,72 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    int id = 0;
-    for (id = 0; id < phil_n; id++)
+    // Number(name) of current process(philosopher)
+    int phil_id = 0;
+    for (phil_id = 0; phil_id < phil_n; phil_id++)
     {
         int pid = fork();
         if (pid == 0)
             break;
-        else if (id == phil_n - 1)
-            wait_pid
+
+        else if (phil_id == phil_n - 1)
+        {
+            int status = 0;
+            for (int i = 0; i < phil_n; i++)
+                if (wait(&status) < -1)
+                {
+                    perror("wait() fail");
+                    exit(EXIT_FAILURE);
+                }
+
+            return 0;
+        }
     }
 
-    while (1)
+    // life cycle of usual philosopher
+    for (int i = 0; i < size_of_dish; i++)
     {
-        think(id);
-        take_forks(id, forks_id, waiter_id);
+        think(phil_id);
+        take_forks(phil_id, forks_id, waiter_id);
 
-        eat(id);
-        put_forks(id, forks_id, waiter_id);
+        eat(phil_id);
+        put_forks(phil_id, forks_id, waiter_id);
     }
+
+    return 0;
 }
 
 
 void take_forks(int phil_pos, int forks_id, int waiter_id)
 {
-    struct sembuf waiter;
-    waiter.sem_op = -1;
-    waiter.sem_flg = 0;
-    waiter.sem_num = 0;
+    struct sembuf sem_inc_dec = {};
 
-    if (semop(waiter_id, &waiter, 1) < 0)
+    // Call waiter
+    sem_inc_dec.sem_op = -1;
+    sem_inc_dec.sem_flg = 0;
+    sem_inc_dec.sem_num = 0;
+
+    if (semop(waiter_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition \n");
         exit(EXIT_FAILURE);
     }
 
+    // Take left fork
+    sem_inc_dec.sem_op = -1;
+    sem_inc_dec.sem_num = phil_pos;
 
-    struct sembuf left_fork;
-    left_fork.sem_flg = 0;
-    left_fork.sem_op = -1;
-    left_fork.sem_num = phil_pos;
-
-    if (semop(forks_id, &left_fork, 1) < 0)
+    if (semop(forks_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition take\n");
         exit(EXIT_FAILURE);
     }
 
-    struct sembuf right_fork;
-    right_fork.sem_flg = 0;
-    right_fork.sem_op = -1;
-    right_fork.sem_num = (phil_pos + 1) % phil_n;
+    // Take right fork
+    sem_inc_dec.sem_op = -1;
+    sem_inc_dec.sem_num = (phil_pos + 1) % phil_n;
 
-    if (semop(forks_id, &right_fork, 1) < 0)
+    if (semop(forks_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition\n");
         exit(EXIT_FAILURE);
@@ -125,52 +138,50 @@ void take_forks(int phil_pos, int forks_id, int waiter_id)
 
 void put_forks(int phil_pos, int forks_id, int waiter_id)
 {
-    struct sembuf right_fork;
-    right_fork.sem_flg = 0;
-    right_fork.sem_op = 1;
-    right_fork.sem_num = (phil_pos + 1) % phil_n;
+    struct sembuf sem_inc_dec = {};
 
-    if (semop(forks_id, &right_fork, 1) < 0)
+    // Call waiter
+    sem_inc_dec.sem_flg = 0;
+    sem_inc_dec.sem_op = 1;
+    sem_inc_dec.sem_num = (phil_pos + 1) % phil_n;
+
+    if (semop(forks_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition\n");
         exit(EXIT_FAILURE);
     }
 
-    struct sembuf left_fork;
-    left_fork.sem_flg = 0;
-    left_fork.sem_op = 1;
-    left_fork.sem_num = phil_pos;
+    // Put left fork
+    sem_inc_dec.sem_op = 1;
+    sem_inc_dec.sem_num = phil_pos;
 
-    if (semop(forks_id, &left_fork, 1) < 0)
+    if (semop(forks_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition\n");
         exit(EXIT_FAILURE);
     }
 
-    struct sembuf waiter;
-    waiter.sem_op = 1;
-    waiter.sem_flg = 0;
-    waiter.sem_num = 0;
+    // Put right fork
+    sem_inc_dec.sem_op = 1;
+    sem_inc_dec.sem_num = 0;
 
-    if (semop(waiter_id, &waiter, 1) < 0)
+    if (semop(waiter_id, &sem_inc_dec, 1) < 0)
     {
         printf("Can\'t wait for condition\n");
         exit(EXIT_FAILURE);
     }
-
-
 }
 
 
 void think(int id)
 {
     printf("Philosopher № %d is thinking\n", id);
-    sleep(rand() % (max_dur_thought + 1));
+    sleep(rand() % (max_thought + 1));
 }
 
 
 void eat(int id)
 {
     printf("Philosopher № %d is eating\n", id);
-    sleep(rand() % (max_dur_eating + 1));
+    sleep(rand() % (max_eating + 1));
 }
