@@ -14,9 +14,7 @@ int _total_legs_num = 0;
 
 void *take_step(void *args)
 {
-    assert(args);
-
-    int this_leg_num = *(int *) args;
+    size_t this_leg_num = (size_t) args;
     int total_leg_num = _total_legs_num;
 
     while (1)
@@ -32,7 +30,7 @@ void *take_step(void *args)
             _cur_leg++;
             _cur_step++;
 
-            printf("Step %d, leg %d\n", _cur_step, this_leg_num + 1);
+            printf("Step %d, leg %lu\n", _cur_step, this_leg_num + 1);
             _cur_leg = _cur_leg % total_leg_num;
         }
 
@@ -53,15 +51,8 @@ int main(int argc, char *argv[])
     // Uses global variable to do not send same information to each thread
     _total_legs_num = legs_num;
 
-    pthread_t *legs = (pthread_t *) calloc(legs_num, sizeof(pthread_t));
+    pthread_t *legs = (pthread_t *) calloc((size_t) legs_num, sizeof(pthread_t));
     if (!legs)
-    {
-        perror("calloc() fail");
-        exit(EXIT_FAILURE);
-    }
-
-    int *legs_id = (int *) calloc(legs_num, sizeof(size_t));
-    if (!legs_id)
     {
         perror("calloc() fail");
         exit(EXIT_FAILURE);
@@ -69,8 +60,7 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < legs_num; i++)
     {
-        legs_id[i] = i;
-        if (pthread_create(&legs[i], NULL, take_step, &legs_id[i]) != 0)
+        if (pthread_create(&legs[i], NULL, take_step, (void *) (size_t) i) != 0)
         {
             fprintf(stderr, "pthread_create() fail\n");
             exit(EXIT_FAILURE);
@@ -86,6 +76,5 @@ int main(int argc, char *argv[])
     }
 
     free(legs);
-    free(legs_id);
     return 0;
 }
