@@ -18,4 +18,7 @@
     
 - Networks<br />
     4.1 [Chatroom](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/chatRoom)<br />
-    4.2 [Backdoor](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/backdoor)
+    4.2 [Backdoor](https://github.com/stanislaushimovolos/MIPT_programming_tasks/tree/master/backdoor)<br />
+    
+- Signal<br />
+    5.1 [Sending a message](https://github.com/stanislaushimovolos/MIPT_OS_COURSE/blob/master/signals/signal.c)
