@@ -7,13 +7,13 @@
 #include <assert.h>
 #include <math.h>
 
-#define message 1
-#define base 10
+#define message 1123
 #define n_bits 8
+#define base 10
 
-unsigned char **create_storage(int num, int *size_of_num);
+#define get_bit(val, pos) ((val) & (1u << (pos)))
 
-int destruct_storage(unsigned char **storage, int storage_sz);
+unsigned char *create_storage(int num, int *size_of_num);
 
 void fill_byte(unsigned char *storage, unsigned char value);
 
@@ -94,7 +94,7 @@ int main()
     else
     {
         int digits_num = 0;
-        unsigned char **storage = create_storage(message, &digits_num);
+        unsigned char *storage = create_storage(message, &digits_num);
 
         while (indicator != 1);
 
@@ -102,7 +102,8 @@ int main()
         {
             while (old_ind == indicator);
             old_ind = indicator;
-            if ((digits_num & (1u << i)) == 0)
+
+            if ((get_bit(digits_num, i)) == 0)
                 kill(pid, SIGUSR1);
             else
                 kill(pid, SIGUSR2);
@@ -115,15 +116,14 @@ int main()
             {
                 while (old_ind == indicator);
                 old_ind = indicator;
-                if (storage[i][j] == 0)
+                if (get_bit(storage[i], j) == 0)
                     kill(pid, SIGUSR1);
                 else
                     kill(pid, SIGUSR2);
             }
 
-        destruct_storage(storage, digits_num);
+        free(storage);
     }
-
 
     return 0;
 }
@@ -167,30 +167,18 @@ void receiver_handler(int sign)
 }
 
 
-int destruct_storage(unsigned char **storage, int storage_sz)
-{
-    assert(storage);
-
-    for (int i = 0; i < storage_sz; i++)
-    {
-        free(storage[i]);
-    }
-    free(storage);
-}
-
-
 void fill_byte(unsigned char *storage, unsigned char val)
 {
     unsigned char tmp = 0;
     for (int i = 0; i < n_bits; i++)
     {
-        tmp = ((val & (1u << i)) != 0);
+        tmp = (get_bit(val, i) != 0);
         storage[i] = tmp;
     }
 }
 
 
-unsigned char **create_storage(int num, int *size_of_num)
+unsigned char *create_storage(int num, int *size_of_num)
 {
     int tmp_num = num;
     int digit_counter = 0;
@@ -204,15 +192,13 @@ unsigned char **create_storage(int num, int *size_of_num)
     if (size_of_num != NULL)
         *size_of_num = digit_counter;
 
-    unsigned char **number_in_bits = (unsigned char **) calloc(digit_counter + 1, sizeof(char *));
-    for (int i = 0; i < digit_counter; i++)
-        number_in_bits[i] = (unsigned char *) calloc(n_bits, sizeof(char));
+    unsigned char *number_in_bits = (unsigned char *) calloc((size_t) digit_counter + 1, sizeof(char *));
 
     tmp_num = num;
     for (int i = 0; i < digit_counter; i++)
     {
-        fill_byte(number_in_bits[digit_counter - i - 1], tmp_num % 10);
-        tmp_num = tmp_num / 10;
+        number_in_bits[digit_counter - i - 1] = tmp_num % base;
+        tmp_num = tmp_num / base;
 
     }
     return number_in_bits;
