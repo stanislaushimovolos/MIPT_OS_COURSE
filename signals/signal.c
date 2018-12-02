@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <math.h>
 
-#define message 100500228
+#define message 10050069
 #define n_bits 8
 #define base 10
 
@@ -25,10 +25,11 @@ int p_pid = 0;
 // uses to check the incoming signal
 char send_flag = 0;
 
+// last received bit
+int cur_bit = 0;
 
-int got = 0;
-
-int current_val = 0;
+// means that receiver got a bit
+int received_flag = 0;
 
 
 int main()
@@ -38,62 +39,48 @@ int main()
     // uses to check the incoming signal
     char send_flag_old = send_flag;
 
-    // to confirm the receiver readiness
+    //define SIGUSR1 to confirm the receiver readiness
     signal(SIGUSR1, sender_handler);
 
     int pid = fork();
     if (pid == 0)
     {
+        // SIGUSR1 => 0, SIGUSR1 => 1
         signal(SIGUSR1, receiver_handler);
         signal(SIGUSR2, receiver_handler);
 
-        int n_digits = 0;
-        int n_got = 0;
-
-        while (1)
-        {
-            //Means ready
-            kill(p_pid, SIGUSR1);
-            while (got == 0);
-            got = 0;
-
-            n_digits += pow(2, n_got) * current_val;
-            n_got++;
-
-            if (n_got == n_bits)
-            {
-                printf("number of digits = %d\n", n_digits);
-                break;
-            }
+#define receive_byte(var)                       \
+    for (int k = 0; k < n_bits; k++)            \
+        {                                       \
+            kill(p_pid, SIGUSR1);               \
+            while (received_flag == 0);         \
+            received_flag = 0;                  \
+                                                \
+            (var) += pow(2, k) * cur_bit;       \
         }
 
-        int global_digit = 0;
-        for (int i = 0; i < n_digits; i++)
+        int n_bytes = 0;
+        receive_byte(n_bytes);
+
+        printf("number of digits = %d\n", n_bytes);
+
+        int num = 0;
+        for (int i = 0; i < n_bytes; i++)
         {
-            int cur_digit = 0;
-            n_got = 0;
-            got = 0;
+            int cur_byte = 0;
 
-            while (1)
-            {
-                kill(p_pid, SIGUSR1);
-                while (got == 0);
-                got = 0;
+            received_flag = 0;
+            receive_byte(cur_byte);
 
-                cur_digit += pow(2, n_got) * current_val;
-                n_got++;
-
-                if (n_got == n_bits)
-                {
-                    global_digit += cur_digit * pow(10, n_digits - i - 1);
-                    break;
-                }
-            }
+            num += cur_byte * pow(10, n_bytes - i - 1);
         }
-        printf("got number = %d\n", global_digit);
+
+        printf("msg = %d\n", num);
     }
 
+#undef receive_byte
 
+        // receiver part
     else
     {
 
@@ -107,12 +94,12 @@ for (int k = 0; k < n_bits; k++)                \
     if (get_bit(byte, k))                       \
     {                                           \
         if (kill(pid, SIGUSR2) < 0)             \
-        perror("kill() fail");                  \
+            perror("kill() fail");              \
     }                                           \
     else                                        \
     {                                           \
         if (kill(pid, SIGUSR1) < 0)             \
-        perror("kill() fail");                  \
+            perror("kill() fail");              \
     }                                           \
 }
 
@@ -132,6 +119,28 @@ for (int k = 0; k < n_bits; k++)                \
 }
 
 #undef send_msg
+#undef get_bit
+
+
+void receiver_handler(int sign)
+{
+    received_flag = 1;
+    switch (sign)
+    {
+        case SIGUSR1:
+        {
+            cur_bit = 0;
+            break;
+        }
+        case SIGUSR2:
+        {
+            cur_bit = 1;
+            break;
+        }
+        default:
+            break;
+    }
+}
 
 
 void sender_handler(int sign)
@@ -141,27 +150,6 @@ void sender_handler(int sign)
         case SIGUSR1:
         {
             send_flag = !send_flag;
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-
-void receiver_handler(int sign)
-{
-    got = 1;
-    switch (sign)
-    {
-        case SIGUSR1:
-        {
-            current_val = 0;
-            break;
-        }
-        case SIGUSR2:
-        {
-            current_val = 1;
             break;
         }
         default:
