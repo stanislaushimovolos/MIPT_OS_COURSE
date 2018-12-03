@@ -11,30 +11,25 @@
 #define n_bits 8
 #define base 10
 
-#define get_bit(val, pos) ((val) & (1u << (pos)))
-
 unsigned char *create_storage(int num, int *size_of_num);
 
 void receiver_handler(int);
 
 void sender_handler(int);
 
-// pid of parent
-int p_pid = 0;
-
-// uses to check the incoming signal
+// uses to check incoming signal
 char send_flag = 0;
 
 // last received bit
 int cur_bit = 0;
 
-// means that receiver got a bit
+// means that receiver got bit
 int received_flag = 0;
 
 
 int main()
 {
-    p_pid = getpid();
+    int p_pid = getpid();
 
     // uses to check the incoming signal
     char send_flag_old = send_flag;
@@ -52,6 +47,7 @@ int main()
 #define receive_byte(var)                       \
     for (int k = 0; k < n_bits; k++)            \
         {                                       \
+            /* tell receiver to send new bit*/  \
             kill(p_pid, SIGUSR1);               \
             while (received_flag == 0);         \
             received_flag = 0;                  \
@@ -62,7 +58,7 @@ int main()
         int n_bytes = 0;
         receive_byte(n_bytes);
 
-        printf("number of digits = %d\n", n_bytes);
+        //printf("number of digits = %d\n", n_bytes);
 
         int num = 0;
         for (int i = 0; i < n_bytes; i++)
@@ -75,16 +71,18 @@ int main()
             num += cur_byte * pow(10, n_bytes - i - 1);
         }
 
-        printf("msg = %d\n", num);
+        printf("value = %d\n", num);
     }
 
 #undef receive_byte
 
-        // receiver part
+// receiver part
     else
     {
 
-#define send_msg(byte)                          \
+#define get_bit(val, pos) ((val) & (1u << (pos)))
+
+#define send_byte(byte)                         \
 for (int k = 0; k < n_bits; k++)                \
 {                                               \
     /* to confirm the receiver readiness */     \
@@ -107,19 +105,24 @@ for (int k = 0; k < n_bits; k++)                \
         unsigned char *msg_byte = create_storage(message, &msg_sz);
 
         // send number of bytes in message
-        send_msg(msg_sz);
+        send_byte(msg_sz);
 
         // send message
         for (int i = 0; i < msg_sz; i++)
-            send_msg(msg_byte[i])
+            send_byte(msg_byte[i])
 
         free(msg_byte);
     }
     return 0;
 }
 
-#undef send_msg
+#undef send_byte
 #undef get_bit
+
+void sender_handler(int sign)
+{
+    send_flag = !send_flag;
+}
 
 
 void receiver_handler(int sign)
@@ -143,21 +146,6 @@ void receiver_handler(int sign)
 }
 
 
-void sender_handler(int sign)
-{
-    switch (sign)
-    {
-        case SIGUSR1:
-        {
-            send_flag = !send_flag;
-            break;
-        }
-        default:
-            break;
-    }
-}
-
-
 unsigned char *create_storage(int num, int *size_of_num)
 {
     int tmp_num = num;
@@ -173,8 +161,8 @@ unsigned char *create_storage(int num, int *size_of_num)
         *size_of_num = digit_counter;
 
     //12345 => [1, 2, 3, 4, 5]
-    unsigned char *digit_repr = (unsigned char *) calloc((size_t) digit_counter + 1, sizeof(char *));
-    if (digit_repr == 0)
+    unsigned char *digit_arr = (unsigned char *) calloc((size_t) digit_counter + 1, sizeof(char *));
+    if (digit_arr == 0)
     {
         fprintf(stderr, "calloc() fail");
         exit(EXIT_FAILURE);
@@ -183,11 +171,11 @@ unsigned char *create_storage(int num, int *size_of_num)
     tmp_num = num;
     for (int i = 0; i < digit_counter; i++)
     {
-        digit_repr[digit_counter - i - 1] = tmp_num % base;
+        digit_arr[digit_counter - i - 1] = tmp_num % base;
         tmp_num = tmp_num / base;
     }
 
-    return digit_repr;
+    return digit_arr;
 }
 
 
