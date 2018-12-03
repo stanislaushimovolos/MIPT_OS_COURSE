@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <math.h>
 
-#define message 10050069
+#define message 1005069
 #define n_bits 8
 #define base 10
 
@@ -47,7 +47,7 @@ int main()
 #define receive_byte(var)                       \
     for (int k = 0; k < n_bits; k++)            \
         {                                       \
-            /* tell receiver to send new bit*/  \
+            /* tell sender to send new bit*/    \
             kill(p_pid, SIGUSR1);               \
             while (received_flag == 0);         \
             received_flag = 0;                  \
@@ -177,5 +177,3 @@ unsigned char *create_storage(int num, int *size_of_num)
 
     return digit_arr;
 }
-
-
